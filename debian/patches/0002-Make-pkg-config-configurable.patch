@@ -1,0 +1,29 @@
+From: Jochen Sprickerhof <jspricke@debian.org>
+Date: Tue, 23 Aug 2022 21:25:30 +0200
+Subject: Make pkg-config configurable
+
+---
+ Makefile | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 9f7119a..255e996 100644
+--- a/Makefile
++++ b/Makefile
+@@ -6,13 +6,14 @@ SRC=.
+ MAN1 = ${NAME}.1
+ 
+ PKGS = wayland-client xkbcommon pangocairo
++PKG_CONFIG ?= pkg-config
+ 
+ WVKBD_SOURCES += $(wildcard $(SRC)/*.c)
+ WVKBD_HEADERS += $(wildcard $(SRC)/*.h)
+ 
+ CFLAGS += -std=gnu99 -Wall -g -DWITH_WAYLAND_SHM -DLAYOUT=\"layout.${LAYOUT}.h\" -DKEYMAP=\"keymap.${LAYOUT}.h\"
+-CFLAGS += $(shell pkg-config --cflags $(PKGS))
+-LDFLAGS += $(shell pkg-config --libs $(PKGS)) -lm -lutil -lrt
++CFLAGS += $(shell $(PKG_CONFIG) --cflags $(PKGS))
++LDFLAGS += $(shell $(PKG_CONFIG) --libs $(PKGS)) -lm -lutil -lrt
+ 
+ WAYLAND_HEADERS = $(wildcard proto/*.xml)
+ 

@@ -1,0 +1,33 @@
+From: Jochen Sprickerhof <jspricke@debian.org>
+Date: Thu, 11 Aug 2022 07:40:57 +0200
+Subject: make sure standard Debian buildflags are used
+
+---
+ Makefile  | 2 +-
+ config.mk | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 1d8b276..9f7119a 100644
+--- a/Makefile
++++ b/Makefile
+@@ -36,7 +36,7 @@ proto/%-client-protocol.h: proto/%.xml
+ $(OBJECTS): $(HDRS) $(WVKBD_HEADERS)
+ 
+ wvkbd-${LAYOUT}: config.h $(OBJECTS) layout.${LAYOUT}.h
+-	$(CC) -o wvkbd-${LAYOUT} $(OBJECTS) $(LDFLAGS)
++	$(CC) $(CFLAGS) -o wvkbd-${LAYOUT} $(OBJECTS) $(LDFLAGS)
+ 
+ clean:
+ 	rm -f $(OBJECTS) $(HDRS) $(WAYLAND_SRC) ${BIN}
+diff --git a/config.mk b/config.mk
+index ae60106..3684ba2 100644
+--- a/config.mk
++++ b/config.mk
+@@ -1,5 +1,5 @@
+ VERSION = 0.15
+-CFLAGS = -DVERSION=\"$(VERSION)\" -D_XOPEN_SOURCE=700
++CFLAGS += $(CPPFLAGS) -DVERSION=\"$(VERSION)\" -D_XOPEN_SOURCE=700
+ PREFIX = /usr/local
+ MANPREFIX = ${PREFIX}/share/man
+ LAYOUT = mobintl
