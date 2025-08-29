@@ -11,6 +11,7 @@ on:
     branches: [ deb-package ]
 
 jobs:
+
   build:
     strategy:
       matrix:
@@ -18,22 +19,31 @@ jobs:
           - arch: amd64
             runner: ubuntu-latest
             cross: false
+            container: null
           - arch: arm64
             runner: ubuntu-24.04-arm
             cross: false
+            container: null
           - arch: armhf
             runner: ubuntu-latest
             cross: true
+            container: debian:bookworm
     name: Build for ${{ matrix.arch }}
     runs-on: ${{ matrix.runner }}
+    container:
+      image: ${{ matrix.container }}
+      options: --privileged
     steps:
+      - name: Install git (for container)
+        if: matrix.container != null
+        run: apt-get update && apt-get install -y git
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Install build dependencies (native)
         if: matrix.cross == false
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential devscripts debhelper-compat lintian scdoc libpango1.0-dev libxkbcommon-dev libwayland-dev
+          apt-get update
+          apt-get install -y build-essential devscripts debhelper-compat lintian scdoc libpango1.0-dev libxkbcommon-dev libwayland-dev
       - name: Build binary package (native)
         if: matrix.cross == false
         run: |
@@ -43,9 +53,9 @@ jobs:
       - name: Install build dependencies (cross for armhf)
         if: matrix.cross == true
         run: |
-          sudo dpkg --add-architecture armhf
-          sudo apt-get update
-          sudo apt-get install -y build-essential devscripts debhelper-compat lintian qemu-user-static scdoc \
+          dpkg --add-architecture armhf
+          apt-get update
+          apt-get install -y build-essential devscripts debhelper-compat lintian qemu-user-static scdoc \
             libpango1.0-dev:armhf libxkbcommon-dev:armhf libwayland-dev:armhf crossbuild-essential-armhf
       - name: Build binary package (cross for armhf)
         if: matrix.cross == true
