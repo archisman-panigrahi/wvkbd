@@ -16,33 +16,43 @@ jobs:
       matrix:
         include:
           - arch: amd64
-            container: ubuntu:noble
+            runner: ubuntu-latest
+            cross: false
           - arch: arm64
-            container: arm64v8/ubuntu:noble
+            runner: ubuntu-24.04-arm
+            cross: false
           - arch: armhf
-            container: arm32v7/ubuntu:noble
+            runner: ubuntu-latest
+            cross: true
     name: Build for ${{ matrix.arch }}
-    runs-on: ubuntu-latest
-    container:
-      image: ${{ matrix.container }}
+    runs-on: ${{ matrix.runner }}
     steps:
-      - name: Install dependencies for git and sudo
-        run: apt-get update && apt-get install -y git sudo
-
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Install build dependencies
+      - name: Install build dependencies (native)
+        if: matrix.cross == false
         run: |
-          apt-get update
-          apt-get install -y build-essential devscripts debhelper-compat lintian scdoc libpango1.0-dev libxkbcommon-dev libwayland-dev
-
-      - name: Build binary package
+          sudo apt-get update
+          sudo apt-get install -y build-essential devscripts debhelper-compat lintian scdoc libpango1.0-dev libxkbcommon-dev libwayland-dev
+      - name: Build binary package (native)
+        if: matrix.cross == false
         run: |
           export DEB_BUILD_OPTIONS=nocheck
           dpkg-buildpackage -us -uc -b
           mv ../*.deb .
-
+      - name: Install build dependencies (cross for armhf)
+        if: matrix.cross == true
+        run: |
+          sudo dpkg --add-architecture armhf
+          sudo apt-get update
+          sudo apt-get install -y build-essential devscripts debhelper-compat lintian qemu-user-static scdoc \
+            libpango1.0-dev:armhf libxkbcommon-dev:armhf libwayland-dev:armhf crossbuild-essential-armhf
+      - name: Build binary package (cross for armhf)
+        if: matrix.cross == true
+        run: |
+          export DEB_BUILD_OPTIONS=nocheck
+          dpkg-buildpackage -us -uc -b -aarmhf
+          mv ../*.deb .
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
