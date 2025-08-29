@@ -9,6 +9,7 @@ Build-Depends: debhelper-compat (= 13),
  libwayland-dev,
  libpango1.0-dev,
  libxkbcommon-dev,
+ scdoc,
 Standards-Version: 4.7.0
 Homepage: https://git.sr.ht/~proycon/wvkbd
 Vcs-Browser: https://salsa.debian.org/DebianOnMobile-team/wvkbd
