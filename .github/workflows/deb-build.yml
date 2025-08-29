@@ -44,9 +44,10 @@ jobs:
           sudo apt-get install -y crossbuild-essential-${{ matrix.arch }}
           export DEB_BUILD_OPTIONS=nocheck
           dpkg-buildpackage -us -uc -b -a${{ matrix.arch }}
+          mv ../*.deb .
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: debs-${{ matrix.arch }}
-          path: ../*.deb
+          path: "*.deb"
